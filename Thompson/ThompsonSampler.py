@@ -26,4 +26,4 @@ class ThompsonSampler():
         else:
             chosen = arms[np.random.randint(n_arms)].index
 
-        return chosen
+        return (chosen, p)

@@ -2,17 +2,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from MAB.MAB import MAB
 from Arm.Bernoulli import BernoulliArm as Bernoulli
+from Arm.Normal import NormalArm as Normal
 from Thompson.ThompsonSampler import ThompsonSampler as ts
 
 if __name__ =="__main__":
 
-    a1 = Bernoulli(0.5, 0)
-    a2 = Bernoulli(0.502, 1)
-    a3 = Bernoulli(0.5025, 2)
-    a4 = Bernoulli(0.52, 3)
-    a5 = Bernoulli(0.495, 4)
+    a1 = Normal(0, 1, 0)
+    a2 = Normal(0.5, 1, 1)
+    a3 = Normal(0.4, 1.5, 2)
+    a4 = Normal(-0.1, 1, 3)
+    a5 = Normal(0, 0.6, 4)
 
-    optimal = 0.52
+ #   optimal = 0.52
 
     arms = [a1, a2, a3, a4, a5]
     n_arms = len(arms)
@@ -30,7 +31,9 @@ if __name__ =="__main__":
         E_prime = []
         
         #sample from Experience set and choose best arm from estimated probabilities
-        chosen = sampler.sample(E, E_prime, nE, p, n_arms, arms)
+        x = sampler.sample(E, E_prime, nE, p, n_arms, arms)
+        chosen = x[0]
+        p = x[1]
 
         reward = arms[chosen].select()
         E.append([chosen, reward])
@@ -43,7 +46,7 @@ if __name__ =="__main__":
     print mab.observations
 
     print 
-    plt.plot([[optimal, m] for m in means])
+    plt.plot(means)
     plt.show()
     plt.plot(choices)
     plt.show()
