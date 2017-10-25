@@ -6,7 +6,8 @@ class ThompsonSampler():
         self.n = n
 
     def sample(self, E, E_prime, nE, p, n_arms, arms):
-        
+
+        print '|N| = ' + str(nE)
         if nE > 0:
             d = {}
             for i in range(nE):
@@ -26,4 +27,4 @@ class ThompsonSampler():
         else:
             chosen = arms[np.random.randint(n_arms)].index
 
-        return (chosen, p)
+        return [chosen, p]

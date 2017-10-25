@@ -20,6 +20,6 @@ class MAB():
             self.observations[a.index][1] += 1          
         
         self.distribution = [np.random.beta(self.observations[a.index][0] + 1, self.observations[a.index][1] + 1) for a in arms] 
-        print self.distribution
+        #print self.distribution
         print
     
