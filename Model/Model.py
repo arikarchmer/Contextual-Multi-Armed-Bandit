@@ -27,7 +27,7 @@ class Model():
 
 
     def predict(self, model, states, f):
-        state = [[f(s)] for s in states[-1]]
+        state = [[f(s)] for s in states]
         print state
         predictions = [model.predict(state)]
         print predictions

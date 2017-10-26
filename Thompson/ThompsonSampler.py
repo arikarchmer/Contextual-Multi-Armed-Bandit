@@ -2,7 +2,7 @@ import numpy as np
 
 class ThompsonSampler():
 
-    def sample(self, E, E_prime, nE, n_arms, arms):
+    def sample(self, E, E_prime, nE):
 
         predictions = {}
         print '\n|N| = ' + str(nE)
