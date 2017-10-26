@@ -1,65 +1,86 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-from MAB.MAB import MAB
 from Arm.Bernoulli import BernoulliArm as Bernoulli
 from Arm.Normal import NormalArm as Normal
 from Thompson.ThompsonSampler import ThompsonSampler as ts
+from Model.Model import Model
+
+def createArms():
+
+    a1 = Normal(np.random.randint(-3,4), np.random.randint(1,2), 0)
+    a2 = Normal(np.random.randint(-3,4), np.random.randint(1,2), 1)
+    a3 = Normal(np.random.randint(-3,4), np.random.randint(1,2), 2)
+    a4 = Normal(np.random.randint(-3,4), np.random.randint(1,2), 3)
+    a5 = Normal(np.random.randint(-3,4), np.random.randint(1,2), 4)
+
+    return [a1, a2, a3, a4, a5]
 
 if __name__ =="__main__":
 
-    a1 = Normal(-10, 1, 0)
-    a2 = Normal(0.1, 5, 1)
-    a3 = Normal(0, 5, 2)
-    a4 = Normal(-10, 1, 3)
-    a5 = Normal(-0.1, 5, 4)
+    f = lambda x: x**3 + 2
 
-    optimal = 0.43
-
-    arms = [a1, a2, a3, a4, a5]
-    n_arms = len(arms)
-    mab = MAB([1.0/n_arms for a in arms], [[0, 0] for a in arms])
+    model = Model()
 
     E = []
     res = []
     means = []
+    mus = []
+    avg_mus = []
+    mus_chosen = []
+    avg_mus_chosen = []
+    totals = []
     choices = []
-    p = {0: 0.5, 1: 0.5, 2: 0.5, 3: 0.5, 4: 0.5}
-    averages = []
-    sampler = ts(0)
-
+    sampler = ts()
+    
     for itr in range(1000):
+        arms = createArms()
+        n_arms = len(arms)
+        
         nE = len(E)
         E_prime = []
         
         #sample from experience set E and choose best arm from estimated probabilities
-        x = sampler.sample(E, E_prime, nE, p, n_arms, arms)
-        chosen = x[0]
-        p = x[1]
+        if nE > 0:
+            sample = sampler.sample(E, E_prime, nE, n_arms, arms)
+            states = sample[0]
+            rewards = sample[1]
+            actions = sample[2]
 
-        l = []
-        for k, v in p.iteritems():
-            l.append(v)
-        averages.append(l)
+            curr_model = model.create_model([[f(s) for s in state] for state in states], actions, rewards)
+            predictions = model.predict(curr_model, states, f)
+
+            predictions_list = sorted(predictions.iteritems(), key=lambda (k,v): (v,k))
+            #print predictions
+            chosen = predictions_list[len(predictions_list) - 1][0]
+            print 'CHOSEN: ' + str((chosen, predictions[chosen]))
+        else:
+            chosen = np.random.randint(0,5)
         
         reward = arms[chosen].select()
-        E.append([chosen, reward])
+        print 'REWARD WAS: ' + str(reward)
+        E.append([chosen, reward, [a.mu for a in arms]])
         res.append(reward)
+        mus_chosen.append(arms[chosen].mu)
+        avg_mus_chosen.append(float(sum(mus_chosen))/len(mus_chosen))
+        totals.append(sum(res))
         means.append(float(sum(res))/len(res))
-        choices.append([sum(l) for l in mab.observations])
-        mab.recalibrate(reward, arms, arms[chosen])
-    
-    print p
-    print len(averages)
-    print choices[-1]
+        mus.append(sum([a.mu for a in arms])/len(arms))
+        avg_mus.append(float(sum(mus))/len(mus))
 
     print
-    # average overall reward vs time
-    plt.plot([[optimal, m] for m in means])
+    print 'AVG MU: ' + str(avg_mus[-1])
+    print 'AVG MU CHOSEN: ' + str(avg_mus_chosen[-1])
+    print 'AVG REWARD: ' + str(means[-1])
+    print 'TOTAL REWARD: ' + str(sum(res))
+
+    # average reward over time
+    plt.plot(means, label="mean reward")
+    plt.plot(avg_mus_chosen, label="avg mu chosen")
+    plt.plot(avg_mus, label="avg mu")
+    plt.legend(bbox_to_anchor=(0.5, 1), loc=1)
     plt.show()
-    # average reward from each arm vs time
-    plt.plot(averages)
-    plt.show()
-    # total count of times pulled for each arm vs time
-    plt.plot(choices)
+    # total reward over time
+    plt.plot(totals)
     plt.show()
             
