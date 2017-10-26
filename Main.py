@@ -6,6 +6,10 @@ from Arm.Normal import NormalArm as Normal
 from Thompson.ThompsonSampler import ThompsonSampler as ts
 from Model.Model import Model
 
+
+def compute_optimal(arms):
+    return max([a.mu for a in arms])
+
 def createArms():
 
     a1 = Normal(np.random.randint(-2,3), np.random.randint(1,4), 0)
@@ -18,7 +22,8 @@ def createArms():
 
 if __name__ =="__main__":
 
-    f = lambda x: x**5 + 3*x**3 + x + 1
+    f_random = lambda x: np.random.randint(-5,6)
+    f = lambda x: x**5 + 3*x**3 + x - 1
 
     model = Model()
 
@@ -29,6 +34,8 @@ if __name__ =="__main__":
     avg_mus = []
     mus_chosen = []
     avg_mus_chosen = []
+    optimals = []
+    optimals_total = []
     totals = []
     choices = []
     sampler = ts()
@@ -71,6 +78,8 @@ if __name__ =="__main__":
         totals.append(sum(res))
         means.append(float(sum(res))/len(res))
         avg_mus.append(float(sum(mus))/len(mus))
+        optimals.append(compute_optimal(arms))
+        optimals_total.append(sum(optimals))
 
     print
     print 'AVG MU: ' + str(float(sum(mus))/len(mus))
@@ -78,14 +87,16 @@ if __name__ =="__main__":
     print 'AVG REWARD: ' + str(means[-1])
     print 'TOTAL REWARD: ' + str(sum(res))
 
-    # average reward over time
     plt.plot(means, label="mean reward")
     plt.plot(avg_mus_chosen, label="avg mu chosen")
     plt.plot(avg_mus, label="avg mu")
     plt.legend(bbox_to_anchor=(0.5, 1), loc=1)
     plt.show()
-    # total reward over time
-    plt.plot(totals)
- #   plt.plot([avg_mus[-1]*len(totals) for t in totals])
+    
+    plt.plot(totals, label="total reward")
+    plt.plot(optimals_total, label="total optimal")
+    plt.show()
+
+    plt.plot([optimals_total[x] - totals[x] for x in range(len(totals))], label='regret')
     plt.show()
             
